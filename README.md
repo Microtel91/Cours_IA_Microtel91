@@ -9,8 +9,6 @@ Cours d'informatique et d'IA donnés aux enfants (10-12 ans) de l'association Mi
 
 Les ressources communes à toute une année (fiches élèves, démos, outils, slides) sont dans `<année>/ressources/`.
 
-L'édition 2025-2026 dans sa disposition d'origine reste consultable via le tag git [`edition-2025-2026`](../../tree/edition-2025-2026).
-
 ## Installer (édition 2025-2026)
 
 ```bash
