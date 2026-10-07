@@ -1,5 +1,9 @@
 # Notre journal
 
+**Jalon actuel** : 1 · L'idée  ← *à changer quand l'animateur valide le suivant*
+
+**Missions faites** : …
+
 ## 🧠 À retenir
 
 > Ce qui est revenu **plusieurs fois** : on le retient, pour savoir le faire sans IA.

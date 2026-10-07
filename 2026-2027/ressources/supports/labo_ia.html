@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Labo IA Microtel91</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a lab bench. Left = controls (the harness), right = what happens (the trace). Big type for projection. */
+:root {
+  --bg: #f3f5fa; --panel: #ffffff; --ink: #1c2233; --muted: #5d6580; --line: #d8dcea; --soft: #e8ebf4;
+  --model: #4e5675; --loop: #2f6fb3; --tools: #c9731c; --ctx: #1f8f7c; --perm: #c0392b; --stop: #7a5aa6;
+  --ok: #1f8a4c; --bad: #c0392b; --warn: #b7791f;
+  --code-bg: #171a24; --code-fg: #e7e9f0;
+  --f-display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12151e; --panel: #1b1f2b; --ink: #e9ecf5; --muted: #9aa2bd; --line: #2e3445; --soft: #252a39;
+  --model: #8d97c4; --loop: #6aa6e8; --tools: #f0a04b; --ctx: #4fc7b1; --perm: #ef6f62; --stop: #b597e0;
+  --ok: #4cc27f; --bad: #ef6f62; --warn: #e3b341; --code-bg: #0c0e14; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #12151e; --panel: #1b1f2b; --ink: #e9ecf5; --muted: #9aa2bd; --line: #2e3445; --soft: #252a39;
+  --model: #8d97c4; --loop: #6aa6e8; --tools: #f0a04b; --ctx: #4fc7b1; --perm: #ef6f62; --stop: #b597e0;
+  --ok: #4cc27f; --bad: #ef6f62; --warn: #e3b341; --code-bg: #0c0e14; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 18px/1.5 var(--f-body); padding: 20px 20px 40px; }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+h1 { font: 800 clamp(30px, 4vw, 44px)/1.05 var(--f-display); margin: 0; letter-spacing: -0.01em; }
+h1 small { display: block; font: 600 15px var(--f-body); color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+h2 { font: 800 26px/1.15 var(--f-display); margin: 0; text-wrap: balance; }
+h3 { font: 700 15px var(--f-body); margin: 0; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+p { margin: 0; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.tab { font: 700 17px var(--f-body); border: 2px solid var(--line); background: var(--panel); color: var(--ink); padding: 10px 16px; border-radius: 999px; cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--loop); outline-offset: 2px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 20px; align-items: start; }
+@media (max-width: 820px) { .grid2 { grid-template-columns: 1fr; } }
+.stack { display: grid; gap: 14px; }
+.muted { color: var(--muted); }
+.btn { border: 0; border-radius: 10px; padding: 12px 18px; font-weight: 700; background: var(--ink); color: var(--bg); }
+.btn.alt { background: var(--soft); color: var(--ink); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* --- Tab 1: next word --- */
+.sentence { font: 600 clamp(24px, 3.4vw, 38px)/1.3 var(--f-display); min-height: 2.6em; }
+.sentence .new { color: var(--tools); }
+.bars { display: grid; gap: 8px; }
+.bar { display: grid; grid-template-columns: minmax(90px, 180px) 1fr 56px; gap: 12px; align-items: center; border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 8px 12px; text-align: left; color: var(--ink); }
+.bar:hover { border-color: var(--tools); }
+.bar .w { font-weight: 700; overflow-wrap: anywhere; }
+.bar .track { display: block; height: 14px; background: var(--soft); border-radius: 7px; overflow: hidden; }
+.bar .fill { display: block; height: 100%; background: var(--model); border-radius: 7px; transition: width .4s; }
+.bar .pct { font: 600 15px var(--f-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.bar.pick { border-color: var(--tools); box-shadow: 0 0 0 2px var(--tools) inset; }
+.callout { border-left: 5px solid var(--model); background: var(--soft); border-radius: 0 10px 10px 0; padding: 12px 16px; }
+.callout.warn { border-left-color: var(--warn); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 6px 12px; font-size: 16px; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* --- Tab 2: harness lab --- */
+.piece { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); border-left: 6px solid var(--c); }
+.piece b { font-size: 18px; }
+.piece span { grid-column: 1; font-size: 15px; color: var(--muted); }
+.piece .sw { grid-row: 1 / span 2; grid-column: 2; }
+.switch { position: relative; width: 56px; height: 32px; }
+.switch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.switch .k { position: absolute; inset: 0; background: var(--soft); border: 1px solid var(--line); border-radius: 999px; transition: background .2s; pointer-events: none; }
+.switch .k::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--muted); transition: transform .2s, background .2s; }
+.switch input:checked + .k { background: var(--c); border-color: var(--c); }
+.switch input:checked + .k::after { transform: translateX(24px); background: #fff; }
+.switch input:focus-visible + .k { outline: 3px solid var(--loop); outline-offset: 2px; }
+select, input[type="range"] { font: inherit; accent-color: var(--stop); }
+select { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+.question { font: 600 21px/1.35 var(--f-display); }
+.trace { display: grid; gap: 10px; }
+.ev { display: grid; grid-template-columns: 44px 1fr; gap: 12px; align-items: start; animation: pop .25s ease-out; }
+@keyframes pop { from { transform: translateY(6px); opacity: .3; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ev { animation: none; } .bar .fill { transition: none; } }
+.ev .ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: var(--soft); border: 2px solid var(--c, var(--line)); }
+.ev .body { min-width: 0; display: grid; gap: 6px; }
+.ev .who { font: 700 13px var(--f-body); letter-spacing: .07em; text-transform: uppercase; color: var(--c, var(--muted)); }
+.ev pre { margin: 0; background: var(--code-bg); color: var(--code-fg); border-radius: 10px; padding: 10px 14px; font: 15px/1.45 var(--f-mono); white-space: pre-wrap; overflow-x: auto; }
+.ev .say { font-size: 19px; }
+.verdict { border-radius: 12px; padding: 14px 16px; font-weight: 700; border: 2px solid var(--c); }
+.meter { display: grid; gap: 6px; }
+.meter .track { height: 12px; background: var(--soft); border-radius: 6px; overflow: hidden; }
+.meter .fill { height: 100%; width: 0; background: var(--ctx); transition: width .4s; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 15px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--c); margin-right: 6px; vertical-align: -1px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 15px; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { border-bottom: 1px solid var(--line); padding: 5px 8px; text-align: left; white-space: nowrap; }
+th { color: var(--muted); font-weight: 700; }
+tr.cat td { background: color-mix(in srgb, var(--ctx) 14%, transparent); }
+tr.cat.adopt td { background: color-mix(in srgb, var(--warn) 14%, transparent); }
+.empty { color: var(--muted); border: 2px dashed var(--line); border-radius: 12px; padding: 22px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><small>Cours IA · Microtel91</small>Le labo IA</h1>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="t1" aria-selected="true" aria-controls="p1">1 · La machine à suite</button>
+      <button class="tab" role="tab" id="t2" aria-selected="false" aria-controls="p2">2 · Le cerveau dans le bocal</button>
+    </div>
+  </header>
+
+  <!-- ===================== TAB 1 ===================== -->
+  <section id="p1" role="tabpanel" aria-labelledby="t1" class="stack">
+    <div class="panel stack">
+      <h3>Choisis un début de phrase</h3>
+      <div class="chips" id="starts"></div>
+    </div>
+    <div class="grid2">
+      <div class="panel stack">
+        <h3>Ce que le modèle a écrit</h3>
+        <p class="sentence" id="sentence"></p>
+        <p class="muted" id="tokcount"></p>
+        <div class="row">
+          <button class="btn" id="bestBtn">Le plus probable</button>
+          <button class="btn alt" id="randBtn">Au hasard (selon les %)</button>
+          <button class="btn alt" id="resetBtn">Recommencer</button>
+        </div>
+        <div class="callout" id="lesson1">Un modèle ne connaît pas « la » bonne réponse : il calcule, pour chaque mot possible, <b>sa chance d'être le suivant</b>. Puis il en choisit un, et recommence.</div>
+      </div>
+      <div class="panel stack">
+        <h3>Ce que le modèle « pense » du mot suivant</h3>
+        <div class="bars" id="bars"></div>
+        <p class="muted">Clique sur un mot pour le choisir toi-même.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TAB 2 ===================== -->
+  <section id="p2" role="tabpanel" aria-labelledby="t2" class="stack" hidden>
+    <div class="panel stack">
+      <h3>La question de l'humain</h3>
+      <p class="question">« Combien de chats du refuge attendent encore d'être adoptés, et comment s'appelle le plus âgé d'entre eux ? »</p>
+    </div>
+    <div class="grid2">
+      <div class="panel stack" aria-label="Le harness">
+        <h2>Équipe le cerveau</h2>
+        <div class="piece" style="--c: var(--model)">
+          <b>🧠 Le modèle</b>
+          <span>Le cerveau. Un petit est rapide, un gros réfléchit mieux.</span>
+          <select class="sw" id="model"><option value="gros">Gros modèle</option><option value="petit">Petit modèle</option></select>
+        </div>
+        <div class="piece" style="--c: var(--tools)">
+          <b>🛠️ Un outil : exécuter du Python</b>
+          <span>Il peut demander à lancer du code.</span>
+          <label class="switch sw"><input type="checkbox" id="tools" aria-label="Outil Python"><span class="k"></span></label>
+        </div>
+        <div class="piece" style="--c: var(--ctx)">
+          <b>📖 Du contexte</b>
+          <span>On lui dit où sont les données et à quoi elles ressemblent.</span>
+          <label class="switch sw"><input type="checkbox" id="ctx" aria-label="Contexte"><span class="k"></span></label>
+        </div>
+        <div class="piece" style="--c: var(--perm)">
+          <b>🚦 Demander la permission</b>
+          <span>Avant chaque outil, c'est toi qui autorises.</span>
+          <label class="switch sw"><input type="checkbox" id="perm" aria-label="Permission"><span class="k"></span></label>
+        </div>
+        <div class="piece" style="--c: var(--stop)">
+          <b>🛑 Arrêt après <output id="limOut">6</output> étapes</b>
+          <span>Une étape = un appel au modèle.</span>
+          <input class="sw" type="range" id="limit" min="1" max="8" value="6" aria-label="Nombre d'étapes maximum">
+        </div>
+        <p class="muted">🔁 <b style="color:var(--loop)">La boucle</b> est toujours là : tant que le modèle demande un outil, le harness l'exécute et lui renvoie le résultat.</p>
+        <div class="row">
+          <button class="btn" id="runBtn">▶ Lancer l'agent</button>
+          <button class="btn alt" id="checkBtn">🔍 Vérifier dans le fichier</button>
+        </div>
+      </div>
+
+      <div class="panel stack">
+        <div class="row" style="justify-content:space-between">
+          <h2>Ce qui se passe</h2>
+          <div class="legend">
+            <span><i style="--c:var(--model)"></i>modèle</span><span><i style="--c:var(--tools)"></i>outil</span>
+            <span><i style="--c:var(--ctx)"></i>contexte</span><span><i style="--c:var(--perm)"></i>permission</span><span><i style="--c:var(--stop)"></i>arrêt</span>
+          </div>
+        </div>
+        <div class="meter">
+          <span class="muted" id="meterTxt">Ce que le modèle relit à chaque étape : 0 mot</span>
+          <div class="track"><div class="fill" id="meterFill"></div></div>
+        </div>
+        <div class="trace" id="trace"><div class="empty">Choisis les pièces du harness à gauche, puis clique sur <b>Lancer l'agent</b>.<br>Commence avec tout éteint : que va faire le cerveau seul ?</div></div>
+        <div id="fileBox" hidden class="stack">
+          <h3>refuge.csv — les chats sont surlignés (orange = déjà adopté)</h3>
+          <div class="tablewrap"><table id="fileTable"></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ===================== Tabs ===================== */
+const tabs = [["t1", "p1"], ["t2", "p2"]];
+function showTab(id) {
+  tabs.forEach(([t, p]) => {
+    const on = t === id;
+    document.getElementById(t).setAttribute("aria-selected", on);
+    document.getElementById(p).hidden = !on;
+  });
+  try { localStorage.setItem("labo-tab", id); } catch (e) {}
+}
+tabs.forEach(([t]) => document.getElementById(t).addEventListener("click", () => showTab(t)));
+if (location.hash === "#bocal") showTab("t2");
+else { try { const s = localStorage.getItem("labo-tab"); if (s) showTab(s); } catch (e) {} }
+
+/* ===================== Tab 1: next word ===================== */
+const STARTS = [
+  { text: "Le chat est monté sur le", lesson: "Plusieurs suites sont possibles. Le modèle choisit souvent la plus probable, mais pas toujours : c'est pour ça que la même question donne parfois des réponses différentes.",
+    options: [
+      { w: "toit", p: 41, next: [{ w: "de la maison.", p: 46 }, { w: "pour dormir.", p: 28 }, { w: "et il miaule.", p: 21 }, { w: "en chocolat.", p: 5 }] },
+      { w: "canapé", p: 24, next: [{ w: "du salon.", p: 52 }, { w: "pour faire la sieste.", p: 38 }, { w: "volant.", p: 10 }] },
+      { w: "lit", p: 15, next: [{ w: "de mes parents.", p: 61 }, { w: "pour se cacher.", p: 33 }, { w: "de la lune.", p: 6 }] },
+      { w: "frigo", p: 12, next: [{ w: "pour voler du jambon.", p: 58 }, { w: "de la cuisine.", p: 37 }, { w: "magique.", p: 5 }] },
+      { w: "dinosaure", p: 8, next: [{ w: "du musée.", p: 55 }, { w: "géant.", p: 40 }, { w: "en peluche.", p: 5 }] },
+    ] },
+  { text: "La capitale de la France est", lesson: "Quand une suite apparaît des milliers de fois dans les textes qu'il a lus, le modèle est presque sûr. Ici, il a raison.",
+    options: [
+      { w: "Paris", p: 93, next: [{ w: ".", p: 80 }, { w: ", une très grande ville.", p: 20 }] },
+      { w: "une", p: 4, next: [{ w: "grande ville.", p: 70 }, { w: "belle ville.", p: 30 }] },
+      { w: "Lyon", p: 2, next: [{ w: ".", p: 100 }] },
+      { w: "Marseille", p: 1, next: [{ w: ".", p: 100 }] },
+    ] },
+  { text: "Le président de l'association Microtel91 s'appelle", lesson: "⚠️ Le modèle n'a jamais lu cette information. Pourtant il propose des prénoms, avec des pourcentages qui ont l'air sérieux : il écrit une suite PLAUSIBLE, pas une suite VRAIE. C'est une hallucination.",
+    warn: true,
+    options: [
+      { w: "Jean", p: 22, next: [{ w: "Dupont.", p: 40 }, { w: "Martin.", p: 35 }, { w: "Moreau.", p: 25 }] },
+      { w: "Pierre", p: 19, next: [{ w: "Lefebvre.", p: 45 }, { w: "Durand.", p: 35 }, { w: "Petit.", p: 20 }] },
+      { w: "Marie", p: 17, next: [{ w: "Laurent.", p: 50 }, { w: "Bernard.", p: 30 }, { w: "Roux.", p: 20 }] },
+      { w: "Philippe", p: 14, next: [{ w: "Garcia.", p: 55 }, { w: "Michel.", p: 45 }] },
+      { w: "Sophie", p: 12, next: [{ w: "Thomas.", p: 60 }, { w: "Robert.", p: 40 }] },
+      { w: "Nathalie", p: 9, next: [{ w: "Simon.", p: 100 }] },
+    ] },
+  { text: "Pour faire un gâteau au chocolat, il faut de la", lesson: "Le modèle a lu énormément de recettes : il « sait » ce qui vient souvent après ces mots. Il ne sait pas cuisiner pour autant !",
+    options: [
+      { w: "farine", p: 54, next: [{ w: ", des œufs et du sucre.", p: 72 }, { w: "et du beurre.", p: 28 }] },
+      { w: "patience", p: 18, next: [{ w: "et de la gourmandise.", p: 60 }, { w: ".", p: 40 }] },
+      { w: "levure", p: 15, next: [{ w: "et de la farine.", p: 100 }] },
+      { w: "crème", p: 13, next: [{ w: "fraîche.", p: 100 }] },
+    ] },
+];
+let start = STARTS[0], chosen = [];
+const $ = (id) => document.getElementById(id);
+
+function currentOptions() {
+  if (chosen.length === 0) return start.options;
+  if (chosen.length === 1) return chosen[0].next;
+  return null;
+}
+function renderStarts() {
+  $("starts").innerHTML = "";
+  STARTS.forEach((s) => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = s.text + " …";
+    b.setAttribute("aria-pressed", s === start);
+    b.onclick = () => { start = s; chosen = []; renderStarts(); renderWord(); };
+    $("starts").appendChild(b);
+  });
+}
+function renderWord() {
+  const words = chosen.map((c, i) => `<span class="${i === chosen.length - 1 ? "new" : ""}">${c.w}</span>`).join(" ");
+  $("sentence").innerHTML = start.text + " " + (words || "<span class='muted'>…</span>");
+  const toks = (start.text + " " + chosen.map((c) => c.w).join(" ")).trim().split(/\s+/).length;
+  $("tokcount").textContent = `${chosen.length} mot(s) ajouté(s) par le modèle · environ ${Math.round(toks * 1.3)} tokens lus`;
+  const opts = currentOptions();
+  $("bars").innerHTML = "";
+  $("bestBtn").disabled = $("randBtn").disabled = !opts;
+  if (!opts) {
+    $("bars").innerHTML = "<div class='empty'>La phrase est finie. Le modèle a écrit mot après mot, en choisissant à chaque fois parmi les suites possibles.</div>";
+    const box = $("lesson1"); box.className = "callout" + (start.warn ? " warn" : ""); box.textContent = start.lesson;
+    return;
+  }
+  const box = $("lesson1"); box.className = "callout";
+  box.innerHTML = "Un modèle ne connaît pas « la » bonne réponse : il calcule, pour chaque mot possible, <b>sa chance d'être le suivant</b>. Puis il en choisit un, et recommence.";
+  opts.forEach((o) => {
+    const b = document.createElement("button");
+    b.className = "bar"; b.dataset.w = o.w;
+    b.innerHTML = `<span class="w">${o.w}</span><span class="track"><span class="fill" style="width:0%"></span></span><span class="pct">${o.p} %</span>`;
+    b.onclick = () => pick(o, b);
+    $("bars").appendChild(b);
+    requestAnimationFrame(() => { b.querySelector(".fill").style.width = o.p + "%"; });
+  });
+}
+function pick(o, el) {
+  if (el) el.classList.add("pick");
+  setTimeout(() => { chosen.push(o); renderWord(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 350);
+}
+$("bestBtn").onclick = () => { const o = currentOptions(); if (o) { const best = o.reduce((a, b) => (b.p > a.p ? b : a)); pick(best, [...$("bars").children].find((x) => x.dataset.w === best.w)); } };
+$("randBtn").onclick = () => {
+  const o = currentOptions(); if (!o) return;
+  let r = Math.random() * o.reduce((s, x) => s + x.p, 0), sel = o[0];
+  for (const x of o) { r -= x.p; if (r <= 0) { sel = x; break; } }
+  pick(sel, [...$("bars").children].find((x) => x.dataset.w === sel.w));
+};
+$("resetBtn").onclick = () => { chosen = []; renderWord(); };
+renderStarts(); renderWord();
+
+/* ===================== Tab 2: harness lab ===================== */
+const CSV = `nom,espece,age_ans,poids_kg,arrivee,adopte,caractere
+Moustache,chat,3,4.2,2026-03-14,non,calme
+Biscotte,chien,5,18.5,2026-01-09,oui,joueur
+Pixel,chat,1,3.1,2026-08-22,non,curieux
+Galette,lapin,2,1.8,2026-05-30,non,timide
+Rocky,chien,8,27.0,2025-11-02,non,protecteur
+Noisette,chat,11,3.9,2025-09-17,non,calme
+Plume,oiseau,4,0.1,2026-06-11,oui,bavard
+Caramel,chien,2,12.3,2026-07-04,non,joueur
+Mimi,chat,6,4.8,2026-02-26,oui,câlin
+Tornade,chat,2,3.6,2026-09-01,non,joueur
+Sushi,chat,9,5.1,2026-04-19,non,râleur
+Patate,cochon d'Inde,1,0.9,2026-08-30,non,curieux
+Zeus,chien,4,31.2,2026-03-03,oui,calme
+Luna,chat,4,4.0,2026-05-12,oui,câlin
+Filou,furet,3,1.2,2026-07-21,non,joueur
+Choupette,chien,12,9.7,2025-12-24,non,câlin
+Oréo,chat,7,4.4,2026-06-28,non,timide
+Banzaï,lapin,5,2.3,2026-02-14,oui,joueur
+Nala,chien,1,8.4,2026-09-15,non,curieux
+Gribouille,chat,13,3.3,2026-01-30,oui,calme
+Tic,oiseau,2,0.05,2026-04-02,non,bavard
+Pirate,chat,5,4.6,2026-07-09,non,curieux`;
+
+const CODE = {
+  guess1: `print(open("chats.csv").read())`,
+  guess2: `print(open("animaux.txt").read())`,
+  ls: `import os\nprint(os.listdir())`,
+  head: `print(open("refuge.csv").read()[:200])`,
+  pandas: `import pandas as pd\ndf = pd.read_csv("refuge.csv")\nchats = df[(df.espece == "chat") & (df.adopte == "non")]\nprint(len(chats), chats.sort_values("age_ans").iloc[-1].nom)`,
+  good: `import csv\nlignes = list(csv.DictReader(open("refuge.csv")))\nchats = [l for l in lignes if l["espece"] == "chat" and l["adopte"] == "non"]\nplus_vieux = max(chats, key=lambda l: int(l["age_ans"]))\nprint(len(chats), "chats en attente ·", plus_vieux["nom"], plus_vieux["age_ans"], "ans")`,
+  bad: `import csv\nlignes = list(csv.DictReader(open("refuge.csv")))\nchats = [l for l in lignes if l["espece"] == "chat"]\nen_attente = [l for l in chats if l["adopte"] == "non"]\nplus_vieux = max(chats, key=lambda l: int(l["age_ans"]))\nprint(len(en_attente), "chats en attente ·", plus_vieux["nom"], plus_vieux["age_ans"], "ans")`,
+};
+const RES = {
+  guess1: [false, `FileNotFoundError: No such file or directory: 'chats.csv'`],
+  guess2: [false, `FileNotFoundError: No such file or directory: 'animaux.txt'`],
+  ls: [true, `['refuge.csv', 'harness_refuge.py']`],
+  head: [true, CSV.slice(0, 200) + "…"],
+  pandas: [false, `ModuleNotFoundError: No module named 'pandas'`],
+  good: [true, `7 chats en attente · Noisette 11 ans`],
+  bad: [true, `7 chats en attente · Gribouille 13 ans`],
+};
+const CTX_TEXT = `Les données du refuge sont dans "refuge.csv".\nColonnes : nom, espece, age_ans, poids_kg, arrivee, adopte (oui/non), caractere.\nCalcule avec l'outil, ne devine jamais.`;
+
+function script(m, tools, ctx) {
+  if (!tools) {
+    if (m === "gros") return { calls: [], answer: ctx
+      ? ["Je sais que les données sont dans refuge.csv, mais je n'ai aucun outil pour ouvrir ce fichier. Je ne peux pas compter les chats.", "honnete"]
+      : ["Je ne connais pas votre refuge : je n'ai jamais vu ses données. Si vous me donnez la liste des animaux, je pourrai compter.", "honnete"] };
+    return { calls: [], answer: ctx
+      ? ["D'après refuge.csv, 9 chats attendent d'être adoptés. Le plus âgé s'appelle Moustache.", "faux"]
+      : ["Il y a 12 chats qui attendent d'être adoptés, et le plus âgé s'appelle Félix, il a 15 ans.", "faux"] };
+  }
+  if (m === "gros") return ctx
+    ? { calls: ["good"], answer: ["7 chats attendent encore d'être adoptés. Le plus âgé est Noisette, 11 ans.", "juste"] }
+    : { calls: ["guess1", "ls", "head", "good"], answer: ["J'ai trouvé le fichier refuge.csv. 7 chats attendent encore d'être adoptés, et le plus âgé est Noisette (11 ans).", "juste"] };
+  return ctx
+    ? { calls: ["pandas", "bad"], answer: ["7 chats attendent encore d'être adoptés, et le plus âgé s'appelle Gribouille.", "piege"] }
+    : { calls: ["guess2", "guess1", "ls", "pandas", "bad"], answer: ["7 chats attendent d'être adoptés. Le plus âgé est Gribouille, 13 ans.", "piege"] };
+}
+
+const VERDICT = {
+  juste: ["var(--ok)", "✅ Juste ! 7 chats attendent, le plus âgé est Noisette (11 ans)."],
+  piege: ["var(--warn)", "⚠️ Presque… 7 chats, c'est juste. Mais Gribouille est DÉJÀ ADOPTÉ ! Le modèle a oublié une condition. Clique sur « Vérifier dans le fichier »."],
+  faux: ["var(--bad)", "❌ Faux : le modèle a inventé (hallucination). Il n'a jamais lu le fichier."],
+  honnete: ["var(--model)", "🤷 Honnête, mais inutile : sans outil, le cerveau ne peut pas lire le fichier."],
+  stop: ["var(--stop)", "🛑 L'agent s'est arrêté avant d'avoir fini. Augmente le nombre d'étapes, ou donne-lui du contexte pour qu'il trouve plus vite."],
+  refus: ["var(--perm)", "🚦 Tu as refusé : le harness n'a rien exécuté. Le modèle ne peut rien faire seul, il ne fait que demander."],
+};
+
+let running = false, words = 0;
+const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const wait = (ms) => new Promise((r) => setTimeout(r, reduce() ? 0 : ms));
+function esc(s) { return s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
+function addEv(color, icon, who, html) {
+  const d = document.createElement("div");
+  d.className = "ev"; d.style.setProperty("--c", color);
+  d.innerHTML = `<div class="ico">${icon}</div><div class="body"><div class="who">${who}</div>${html}</div>`;
+  $("trace").appendChild(d);
+  d.scrollIntoView({ block: "nearest", behavior: reduce() ? "auto" : "smooth" });
+  return d;
+}
+function grow(n) {
+  words += n;
+  $("meterTxt").textContent = `Ce que le modèle relit à chaque étape : environ ${words} mots (tout est renvoyé à chaque fois !)`;
+  $("meterFill").style.width = Math.min(100, words / 4) + "%";
+}
+function askPermission(d) {
+  return new Promise((res) => {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `<span style="color:var(--perm);font-weight:700">🚦 Le harness te demande : autoriser ?</span>`;
+    const ok = document.createElement("button"); ok.className = "btn"; ok.textContent = "Autoriser";
+    const no = document.createElement("button"); no.className = "btn alt"; no.textContent = "Refuser";
+    ok.onclick = () => { row.remove(); res(true); };
+    no.onclick = () => { row.remove(); res(false); };
+    row.append(ok, no);
+    d.querySelector(".body").appendChild(row);
+    ok.focus();
+  });
+}
+
+async function run() {
+  if (running) return;
+  running = true; $("runBtn").disabled = true; $("fileBox").hidden = true;
+  $("trace").innerHTML = ""; words = 0; grow(0);
+  const m = $("model").value, tools = $("tools").checked, ctx = $("ctx").checked, perm = $("perm").checked, limit = +$("limit").value;
+  const s = script(m, tools, ctx);
+
+  addEv("var(--ink)", "🙋", "L'humain", `<p class="say">Combien de chats attendent encore d'être adoptés, et comment s'appelle le plus âgé ?</p>`); grow(20);
+  await wait(500);
+  if (ctx) { addEv("var(--ctx)", "📖", "Le harness ajoute du contexte, en cachette", `<pre>${esc(CTX_TEXT)}</pre>`); grow(30); await wait(600); }
+  if (tools) { addEv("var(--tools)", "🛠️", "Le harness décrit l'outil au modèle", `<p>« Tu peux demander <b>executer_python(code)</b>. »</p>`); grow(15); await wait(500); }
+
+  let step = 0, verdict = null;
+  for (const c of s.calls) {
+    step++;
+    if (step > limit) { verdict = "stop"; break; }
+    const d = addEv("var(--model)", "🧠", `Étape ${step} · le modèle DEMANDE un outil`, `<pre>${esc(CODE[c])}</pre>`);
+    grow(CODE[c].split(/\s+/).length);
+    await wait(700);
+    if (perm && !(await askPermission(d))) {
+      addEv("var(--perm)", "🚦", "Le harness", `<p class="say">Refusé par l'humain. Rien n'a été exécuté.</p>`);
+      step++;
+      if (step <= limit) addEv("var(--model)", "🧠", `Étape ${step} · le modèle répond`, `<p class="say">Je n'ai pas le droit d'exécuter de code, donc je ne peux pas lire le fichier du refuge.</p>`);
+      verdict = "refus"; break;
+    }
+    const [ok, out] = RES[c];
+    addEv(ok ? "var(--tools)" : "var(--bad)", "⚙️", "Le harness exécute et renvoie le résultat", `<pre>${esc(out)}</pre>`);
+    grow(out.split(/\s+/).length);
+    if (!ok) addEv("var(--loop)", "🔁", "La boucle", `<p>Erreur ! Le résultat retourne au modèle, qui va réessayer.</p>`);
+    await wait(800);
+  }
+  if (!verdict) {
+    step++;
+    if (step > limit) verdict = "stop";
+    else {
+      addEv("var(--model)", "🧠", `Étape ${step} · le modèle RÉPOND (aucun outil demandé → arrêt)`, `<p class="say">${s.answer[0]}</p>`);
+      verdict = s.answer[1];
+    }
+  }
+  if (verdict === "stop") addEv("var(--stop)", "🛑", "Arrêt", `<p class="say">Limite de ${limit} étape(s) atteinte. Pas de réponse.</p>`);
+  await wait(300);
+  const [col, txt] = VERDICT[verdict];
+  const v = document.createElement("div"); v.className = "verdict"; v.style.setProperty("--c", col); v.textContent = txt;
+  $("trace").appendChild(v);
+  v.scrollIntoView({ block: "nearest", behavior: reduce() ? "auto" : "smooth" });
+  running = false; $("runBtn").disabled = false;
+}
+$("runBtn").onclick = run;
+$("limit").oninput = (e) => { $("limOut").textContent = e.target.value; };
+
+(function buildTable() {
+  const rows = CSV.split("\n").map((l) => l.split(","));
+  $("fileTable").innerHTML = rows.map((r, i) => {
+    if (i === 0) return `<tr>${r.map((c) => `<th>${c}</th>`).join("")}</tr>`;
+    const cls = r[1] === "chat" ? (r[5] === "oui" ? "cat adopt" : "cat") : "";
+    return `<tr class="${cls}">${r.map((c) => `<td>${c}</td>`).join("")}</tr>`;
+  }).join("");
+})();
+$("checkBtn").onclick = () => { $("fileBox").hidden = !$("fileBox").hidden; if (!$("fileBox").hidden) $("fileBox").scrollIntoView({ block: "nearest" }); };
+</script>
+</body>
+</html>

@@ -5,9 +5,9 @@ Cours d'informatique et d'IA donnés aux enfants (10-12 ans) de l'association Mi
 | Année | Semestre | Cours | Thème |
 |---|---|---|---|
 | [2025-2026](2025-2026/) | [Semestre 2](2025-2026/Semestre2/) | Cours Chatbot | Python (types, conditions, boucles) → un LLM via LangChain → une interface Streamlit |
-| [2026-2027](2026-2027/) | [Semestre 1](2026-2027/Semestre1/) · [Semestre 2](2026-2027/Semestre2/) | Cours IA | Modèle, harness, puis projets en équipe guidés par l'Ikigai, appris en parlant aux IA |
+| [2026-2027](2026-2027/) | Semestres 1 et 2 | Cours IA | 3 séances sur le modèle et le harness, puis des projets en équipe (Ikigai) menés avec des IA |
 
-Les ressources communes à toute une année (fiches élèves, démos, outils, slides) sont dans `<année>/ressources/`.
+Chaque année a son propre guide (`<année>/README.md`) et ses ressources (`<année>/ressources/`).
 
 ## Installer (édition 2025-2026)
 
