@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modèle et harness</title>
+<style>
+  :root {
+    --ink: #1f2433; --muted: #5b6275; --bg: #fbfbfd; --panel: #f2f3f7; --line: #d9dce5;
+    --term-bg: #16181f; --term-fg: #e6e6e6; --term-dim: #8b90a0;
+    --model: #4e5675; --loop: #2f6fb3; --tools: #c9731c; --ctx: #1f8f7c; --perm: #c0392b; --stop: #7a5aa6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #e9ebf1; overflow: hidden;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--ink); }
+  #deck { position: absolute; width: 1280px; height: 720px; left: 50%; top: 50%; transform-origin: center; }
+  section { position: absolute; inset: 0; background: var(--bg); padding: 56px 72px; display: none; flex-direction: column;
+    border-radius: 6px; box-shadow: 0 10px 40px rgba(31,36,51,.15); }
+  section.on { display: flex; }
+  .kicker { font-size: 17px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--model); margin-bottom: 10px; }
+  h1 { font-size: 68px; line-height: 1.05; margin: 0 0 18px; }
+  h2 { font-size: 46px; line-height: 1.12; margin: 0 0 26px; }
+  p, li { font-size: 28px; line-height: 1.4; }
+  ul { margin: 0; padding-left: 1.1em; } li { margin: 8px 0; }
+  .muted { color: var(--muted); } .big { font-size: 38px; } .huge { font-size: 96px; }
+  .center { align-items: center; justify-content: center; text-align: center; }
+  .grow { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .row { display: flex; flex-direction: row; gap: 24px; align-items: stretch; }
+  .row > * { flex: 1; min-width: 0; }
+  .row.grow { flex: none; margin: auto 0; }
+  .card p.huge { font-size: 96px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px 24px; }
+  .card h3 { margin: 0 0 8px; font-size: 30px; } .card p { margin: 0; font-size: 23px; }
+  .part { border-top: 8px solid; }
+  .c-model { border-top-color: var(--model); } .c-loop { border-top-color: var(--loop); } .c-tools { border-top-color: var(--tools); }
+  .c-ctx { border-top-color: var(--ctx); } .c-perm { border-top-color: var(--perm); } .c-stop { border-top-color: var(--stop); }
+  .pill { display: inline-block; color: #fff; border-radius: 999px; padding: 4px 16px; font-weight: 700; font-size: 22px; }
+  pre { margin: 0; background: var(--term-bg); color: var(--term-fg); border-radius: 14px; padding: 20px 24px;
+    font: 21px/1.45 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; }
+  pre .d { color: var(--term-dim); } pre .y { color: #e3b341; } pre .g { color: #7ee787; } pre .r { color: #ff7b72; } pre .b { color: #79c0ff; }
+  .eq { display: flex; align-items: center; gap: 20px; font-size: 44px; font-weight: 800; justify-content: center; margin: 10px 0 30px; }
+  .eq .box { color: #fff; border-radius: 16px; padding: 14px 26px; background: var(--model); }
+  .eq .harness { display: flex; gap: 10px; border: 4px dashed var(--model); border-radius: 18px; padding: 10px; }
+  .eq .harness span { color: #fff; font-size: 22px; padding: 10px 14px; border-radius: 10px; }
+  .postit { display: inline-block; background: #fff4a8; padding: 16px 22px; font-size: 32px; transform: rotate(-2deg); box-shadow: 0 4px 10px rgba(0,0,0,.12); margin: 8px; }
+  .feu { display: flex; flex-direction: column; gap: 18px; }
+  .feu div { display: flex; align-items: center; gap: 20px; font-size: 28px; }
+  .feu i { width: 56px; height: 56px; border-radius: 50%; display: inline-block; flex: none; }
+  .note { margin-top: auto; background: #eef0f6; border-left: 6px solid var(--model); border-radius: 10px; padding: 14px 20px; font-size: 24px; }
+  .flow { display: flex; flex-direction: row; align-items: center; gap: 10px; justify-content: center; font-size: 22px; }
+  .flow .card { padding: 16px 16px; }
+  .flow .card { flex: none; text-align: center; }
+  .arrow { font-size: 40px; color: var(--muted); }
+  #num { position: fixed; right: 18px; bottom: 12px; font-size: 14px; color: var(--muted); }
+  #bar { position: fixed; left: 0; bottom: 0; height: 4px; background: var(--model); transition: width .2s; }
+</style>
+</head>
+<body>
+<div id="deck">
+
+<!-- ================= PARTIE 1 : LE MODÈLE (S01) ================= -->
+
+<section class="center">
+  <div class="kicker">Microtel91 · Cours IA 2026-2027</div>
+  <h1>Apprendre l'IA<br>en parlant aux IA</h1>
+  <p class="muted big">Partie 1 — Le cerveau dans le bocal</p>
+</section>
+
+<section>
+  <div class="kicker">Cette année</div>
+  <h2>Quatre grandes étapes</h2>
+  <div class="row grow">
+    <div class="card part c-model"><h3>🧠 Comprendre</h3><p>Ce qu'est un modèle, ce qu'est un harness, les IA qui existent.</p></div>
+    <div class="card part c-ctx"><h3>🎯 Choisir</h3><p>Ton Ikigai, ton projet, ton équipe.</p></div>
+    <div class="card part c-tools"><h3>🛠️ Construire</h3><p>Le projet de vos rêves, en apprenant tout avec des IA.</p></div>
+    <div class="card part c-stop"><h3>🎤 Montrer</h3><p>À chaque séance, et devant vos parents en fin d'année.</p></div>
+  </div>
+</section>
+
+<section class="center">
+  <div class="kicker">Jeu 1 · La machine à suite</div>
+  <h2>Écris le mot suivant sur ton post-it</h2>
+  <p class="huge" style="margin:20px 0">« Le chat est monté sur le … »</p>
+</section>
+
+<section>
+  <div class="kicker">Ce que vous venez de faire</div>
+  <h2>Un modèle devine la suite la plus probable</h2>
+  <div class="grow">
+    <div style="text-align:center"><span class="postit">toit ×9</span><span class="postit">canapé ×4</span><span class="postit">arbre ×3</span><span class="postit">dinosaure ×1</span></div>
+    <div class="flow" style="margin-top:40px">
+      <div class="card">« Le chat est monté sur le »</div><span class="arrow">→</span>
+      <div class="card" style="background:var(--model);color:#fff">🧠 modèle</div><span class="arrow">→</span>
+      <div class="card">« toit »</div><span class="arrow">→</span><div class="card">… et on recommence</div>
+    </div>
+  </div>
+  <div class="note">Un modèle écrit <b>un petit morceau de mot à la fois</b> (un <i>token</i>), des milliers de fois, très vite.</div>
+</section>
+
+<section>
+  <div class="kicker">D'où vient ce réflexe ?</div>
+  <h2>Il a lu énormément… jusqu'à une certaine date</h2>
+  <ul class="grow">
+    <li>📚 Pendant son <b>entraînement</b>, il a lu des milliards de pages : livres, sites, code…</li>
+    <li>🔮 Il en a tiré un réflexe : deviner la suite d'un texte.</li>
+    <li>📅 L'entraînement s'arrête à une date. Après, il ne sait plus rien.</li>
+    <li>🙈 Il n'a jamais lu <b>tes</b> cahiers, <b>ton</b> école, <b>ta</b> journée.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="kicker">L'image à retenir</div>
+  <h2>Le cerveau dans le bocal 🧠🫙</h2>
+  <div class="row grow">
+    <div class="card"><h3>Il sait…</h3><p style="font-size:27px">✅ écrire, expliquer, traduire<br>✅ inventer des histoires<br>✅ écrire du code</p></div>
+    <div class="card"><h3>Il n'a pas…</h3><p style="font-size:27px">❌ d'yeux ni de mains<br>❌ de montre ni de calendrier<br>❌ d'internet</p></div>
+  </div>
+  <div class="note">Un cerveau très cultivé, enfermé dans un bocal, qui ne peut qu'<b>écrire sur un papier</b>.</div>
+</section>
+
+<section>
+  <div class="kicker">Les noms à connaître</div>
+  <h2>Modèles et chatbots, ce n'est pas pareil</h2>
+  <div class="row grow">
+    <div class="card"><h3>Modèle</h3><p style="font-size:26px">Mistral 🇫🇷<br>GPT<br>Claude<br>Gemini<br>Llama, Qwen…</p></div>
+    <div class="arrow" style="flex:none;align-self:center">→</div>
+    <div class="card"><h3>Chatbot qui l'utilise</h3><p style="font-size:26px">Le Chat<br>ChatGPT<br>Claude<br>Gemini<br>… et notre chat du club !</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Attention</div>
+  <h2>Plausible ≠ vrai</h2>
+  <div class="grow">
+    <p class="big">Le modèle est fait pour écrire une suite qui <b>a l'air</b> juste.<br>Pas forcément une suite <b>vraie</b>.</p>
+    <p class="big">Quand il invente, on dit qu'il <b>hallucine</b>.</p>
+  </div>
+  <div class="note">Il ne ment pas : il n'a pas l'intention de tromper. Il <b>devine</b>.</div>
+</section>
+
+<section>
+  <div class="kicker">Jeu 2 · Mission</div>
+  <h2>Piégez le modèle ! 🎯</h2>
+  <ul class="grow">
+    <li>« Comment s'appelle l'animateur du cours d'IA de Microtel91 ? »</li>
+    <li>« Qu'est-ce que j'ai mangé ce matin ? »</li>
+    <li>« Raconte la vie du célèbre explorateur Bartholomé Pivoine. »</li>
+    <li>« Combien de lettres "e" dans "l'élève révèle ses rêves" ? »</li>
+  </ul>
+  <div class="note">Notez : la question · la réponse · <b>vrai / faux / il a avoué ne pas savoir</b>.</div>
+</section>
+
+<section class="center">
+  <div class="kicker">Le suspense</div>
+  <h2>Demandez-lui la date d'aujourd'hui.</h2>
+  <p class="big">Il répond juste… alors qu'il est dans un bocal.<br><b>Comment est-ce possible ?</b></p>
+  <p class="muted big">Réponse la semaine prochaine 🤫</p>
+</section>
+
+<!-- ================= PARTIE 2 : LE HARNESS (S02) ================= -->
+
+<section class="center">
+  <div class="kicker">Microtel91 · Cours IA 2026-2027</div>
+  <h1>L'armure du cerveau</h1>
+  <p class="muted big">Partie 2 — Le harness</p>
+</section>
+
+<section>
+  <div class="kicker">La réponse au suspense</div>
+  <h2>Quelqu'un lui a écrit la date… en cachette</h2>
+  <pre><span class="d"># Ce que le chatbot envoie au modèle AVANT ta question :</span>
+<span class="y">system :</span> Nous sommes le mercredi 14 octobre 2026. Tu es un assistant
+         gentil. Réponds en français. Tu peux chercher sur internet.
+<span class="b">user   :</span> Quelle est la date d'aujourd'hui ?</pre>
+  <div class="note">Ce programme autour du modèle s'appelle le <b>harness</b> (le <i>harnais</i>, l'équipement).<br>Le modèle ne connaît pas la date : il la <b>lit</b>.</div>
+</section>
+
+<section>
+  <div class="kicker">La formule de l'année</div>
+  <h2 style="text-align:center">L'intelligence ne vient pas que du modèle</h2>
+  <div class="eq">
+    <span>Agent</span><span>=</span><span class="box">🧠 Modèle</span><span>+</span>
+    <span class="harness">
+      <span style="background:var(--loop)">🔁 Boucle</span><span style="background:var(--tools)">🛠️ Outils</span>
+      <span style="background:var(--ctx)">📖 Contexte</span><span style="background:var(--perm)">🚦 Permissions</span>
+      <span style="background:var(--stop)">🛑 Arrêt</span>
+    </span>
+  </div>
+  <p style="text-align:center" class="big">Le modèle est le cerveau. Le harness est <b>tout le reste</b>.</p>
+</section>
+
+<section>
+  <div class="kicker">Jeu de rôle</div>
+  <h2>Le cerveau dans le bocal</h2>
+  <div class="row grow">
+    <div class="card part c-model"><h3>🧠 Le Cerveau</h3><p>Dos à la classe. Ne voit rien. Ne peut qu'<b>écrire des demandes</b> :<br><i>« OUTIL : lire la ligne 3 de refuge.csv »</i></p></div>
+    <div class="card part c-tools"><h3>🛡️ Le Harness</h3><p>Seul à avoir le fichier et la calculatrice. Exécute les demandes autorisées, rapporte le résultat <b>par écrit</b>.</p></div>
+    <div class="card part c-ctx"><h3>🙋 L'Humain</h3><p>Pose la question.<br><br><b>La classe</b> note chaque aller-retour au tableau : c'est la <b>trace</b>.</p></div>
+  </div>
+  <div class="note">❓ « Combien de chats du refuge attendent d'être adoptés, et comment s'appelle le plus âgé ? »</div>
+</section>
+
+<section>
+  <div class="kicker">Trois manches</div>
+  <h2>Même cerveau, équipement différent</h2>
+  <div class="row grow">
+    <div class="card part c-model"><h3>Manche 1</h3><p><b>Le cerveau seul.</b><br>Pas d'outil. Il doit répondre tout de suite.</p></div>
+    <div class="card part c-loop"><h3>Manche 2</h3><p><b>+ un outil et une boucle.</b><br>Il peut demander… mais ne sait pas comment s'appelle le fichier.</p></div>
+    <div class="card part c-ctx"><h3>Manche 3</h3><p><b>+ du contexte.</b><br>On lui donne d'abord : nom du fichier, colonnes.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Les 5 pièces du harness</div>
+  <h2>L'équipement autour du cerveau</h2>
+  <div class="row" style="flex-wrap:wrap">
+    <div class="card part c-loop"><h3>🔁 Boucle</h3><p>Essayer → regarder le résultat → recommencer.</p></div>
+    <div class="card part c-tools"><h3>🛠️ Outils</h3><p>Les mains : calculer, chercher, lire un fichier, lancer du code.</p></div>
+    <div class="card part c-ctx"><h3>📖 Contexte</h3><p>Tout ce que le cerveau a sous les yeux, renvoyé à chaque fois.</p></div>
+  </div>
+  <div class="row" style="margin-top:24px">
+    <div class="card part c-perm"><h3>🚦 Permissions</h3><p>Ce qu'il peut faire seul, ce qu'il doit demander, ce qui est interdit.</p></div>
+    <div class="card part c-stop"><h3>🛑 Arrêt</h3><p>Réponse trouvée · trop d'essais · l'humain dit stop.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">La phrase la plus importante</div>
+  <h2>Le modèle demande. Le harness décide et exécute.</h2>
+  <div class="flow grow">
+    <div class="card" style="background:var(--model);color:#fff">🧠 « Je veux lancer ce code »</div><span class="arrow">→</span>
+    <div class="card part c-perm">🛡️ Autorisé ?</div><span class="arrow">→</span>
+    <div class="card part c-tools">⚙️ Exécution</div><span class="arrow">→</span>
+    <div class="card part c-ctx">📖 Résultat → contexte</div><span class="arrow">↩</span>
+  </div>
+  <div class="note">Le modèle ne lance <b>jamais</b> rien lui-même. Il ne fait qu'écrire.</div>
+</section>
+
+<section>
+  <div class="kicker">Permissions</div>
+  <h2>Le feu tricolore 🚦</h2>
+  <div class="feu grow">
+    <div><i style="background:#2e9e5b"></i><b>Vert</b> — il peut le faire seul : lire un fichier du projet.</div>
+    <div><i style="background:#e3a21a"></i><b>Orange</b> — il doit demander : modifier un fichier, envoyer un message.</div>
+    <div><i style="background:var(--perm)"></i><b>Rouge</b> — interdit : supprimer des fichiers, lire les mots de passe.</div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Démo · dans la machine</div>
+  <h2>Même modèle, trois harness</h2>
+  <pre><span class="g">$</span> python harness_refuge.py
+<span class="y">=== Niveau 0 (le modèle seul)</span>
+  RÉPONSE : Je ne connais pas votre refuge… <span class="d">(ou il invente !)</span>
+<span class="y">=== Niveau 2 (+ du contexte et des règles)</span>
+  [étape 1] le modèle DEMANDE d'exécuter : import pandas …
+  [harness] résultat : <span class="r">ModuleNotFoundError: No module named 'pandas'</span>
+  [étape 2] le modèle DEMANDE d'exécuter : import csv …
+  [harness] résultat : 7 chats · le plus âgé : Gribouille
+  [étape 3] RÉPONSE : 7 chats attendent, le plus âgé s'appelle <span class="r">Gribouille</span>.</pre>
+  <div class="note">🔍 Vérificateur ! Gribouille a 13 ans… mais il est <b>déjà adopté</b>. La bonne réponse : <b>Noisette</b>.</div>
+</section>
+
+<section>
+  <div class="kicker">Et chez les pros ?</div>
+  <h2>Même modèle, harness différent = résultat différent</h2>
+  <div class="row grow" style="align-items:center">
+    <div class="card part c-loop" style="text-align:center"><p class="muted">Un modèle dans le harness A</p><p class="huge" style="font-weight:800">76 %</p></div>
+    <div class="card part c-tools" style="text-align:center"><p class="muted">Le même modèle dans le harness B</p><p class="huge" style="font-weight:800">58 %</p></div>
+  </div>
+  <p class="muted" style="font-size:20px">Terminal-Bench : un test où des agents doivent réussir des tâches sur ordinateur.</p>
+</section>
+
+<section>
+  <div class="kicker">2026, l'année des harness</div>
+  <h2>Ce que vous utilisez, ce sont des harness</h2>
+  <ul class="grow">
+    <li>💬 <b>Le Chat, ChatGPT, Claude</b> : un modèle + recherche web, mémoire, création d'images…</li>
+    <li>👩‍💻 <b>Claude Code, Codex, opencode</b> : un modèle + des outils pour lire, écrire et tester du code, tout seul, en boucle.</li>
+    <li>🧑‍🔬 Beaucoup d'ingénieurs n'écrivent presque plus de code à la main : ils <b>décrivent le but, fixent les règles, vérifient</b>.</li>
+    <li>🤖 Et cette année… <b>vous allez construire le vôtre</b>.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="kicker">À recopier dans le carnet</div>
+  <h2>Ce qu'on retient</h2>
+  <div class="grow">
+    <p class="big">Un <b>modèle</b> devine la suite d'un texte. Il peut <b>halluciner</b>.</p>
+    <p class="big"><b>Agent = Modèle + Harness.</b></p>
+    <p class="big">Le harness : 🔁 boucle · 🛠️ outils · 📖 contexte · 🚦 permissions · 🛑 arrêt.</p>
+    <p class="big">Le modèle <b>demande</b>, le harness <b>décide et exécute</b>.</p>
+  </div>
+</section>
+
+</div>
+<div id="num"></div><div id="bar"></div>
+<script>
+  const slides = [...document.querySelectorAll("section")];
+  const deck = document.getElementById("deck");
+  let i = Math.max(0, Math.min(slides.length - 1, parseInt(location.hash.slice(1)) - 1 || 0));
+  function show() {
+    slides.forEach((s, k) => s.classList.toggle("on", k === i));
+    document.getElementById("num").textContent = `${i + 1} / ${slides.length}`;
+    document.getElementById("bar").style.width = `${(i + 1) / slides.length * 100}%`;
+    history.replaceState(null, "", "#" + (i + 1));
+  }
+  function fit() {
+    const s = Math.min(innerWidth / 1280, innerHeight / 720) * 0.98;
+    deck.style.transform = `translate(-50%, -50%) scale(${s})`;
+  }
+  addEventListener("keydown", e => {
+    if (["ArrowRight", "ArrowDown", " ", "PageDown"].includes(e.key)) i = Math.min(i + 1, slides.length - 1);
+    else if (["ArrowLeft", "ArrowUp", "PageUp"].includes(e.key)) i = Math.max(i - 1, 0);
+    else if (e.key === "Home") i = 0;
+    else if (e.key === "End") i = slides.length - 1;
+    else if (e.key === "f") document.documentElement.requestFullscreen?.();
+    else return;
+    e.preventDefault(); show();
+  });
+  addEventListener("click", e => { i = e.clientX > innerWidth / 3 ? Math.min(i + 1, slides.length - 1) : Math.max(i - 1, 0); show(); });
+  addEventListener("hashchange", () => { i = Math.max(0, Math.min(slides.length - 1, parseInt(location.hash.slice(1)) - 1 || 0)); show(); });
+  addEventListener("resize", fit);
+  fit(); show();
+</script>
+</body>
+</html>
