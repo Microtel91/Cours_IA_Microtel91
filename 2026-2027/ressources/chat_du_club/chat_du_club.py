@@ -8,7 +8,6 @@ La clé reste dans la variable d'environnement du poste : les élèves ne la voi
 """
 
 import os
-import re
 
 import requests
 import streamlit as st
@@ -25,13 +24,11 @@ MODELES = {
 }
 
 
-def prompt_coach():
-    with open(os.path.join(DOSSIER, "..", "coach", "prompt_coach.md"), encoding="utf-8") as f:
-        return re.search(r"\n---\n(.*?)\n---", f.read(), re.S).group(1).strip()
-
+with open(os.path.join(DOSSIER, "coach.txt"), encoding="utf-8") as f:
+    COACH = f.read().strip()
 
 MODES = {
-    "Coach de projet": prompt_coach(),
+    "Coach de projet": COACH,
     "Libre (presque sans consignes)": (
         "Tu parles à des enfants de 10 à 12 ans. Réponds en français. "
         "Ne demande jamais d'informations personnelles et refuse tout contenu inadapté à leur âge."

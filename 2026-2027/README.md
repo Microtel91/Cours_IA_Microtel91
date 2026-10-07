@@ -1,58 +1,57 @@
-# Cours IA — Microtel91 · 2026-2027
+# Cours IA 2026-2027 — Guide de l'animateur
 
-**Apprendre l'IA en parlant aux IA, en équipe, sur un projet qui compte pour le monde.**
+**10-12 ans · 2 h par semaine · 14 séances (7 par semestre)**
 
-Public : 10-12 ans, bases de Python déjà vues. Rythme : 2 h par semaine, 2 semestres × 7 séances.
+## L'idée
 
-## L'idée en 4 phrases
+1. **Semestre 1, début** : on comprend qu'une IA, c'est un **modèle** (un cerveau qui devine la suite d'un texte)
+   + un **harness** (tout ce qu'il y a autour : outils, consignes, règles). *Agent = Modèle + Harness.*
+2. **Ensuite** : en équipe, chacun réalise un projet qui l'intéresse **et** qui aide quelqu'un (Ikigai),
+   en apprenant tout ce qui lui manque **en parlant à une IA**.
 
-1. **Tronc commun** (séances 1 à 3) : on comprend ce qu'est un *modèle*, pourquoi
-   l'intelligence ne vient pas que du modèle, et ce qu'est un *harness* (l'équipement autour du modèle).
-2. **Ikigai** (séance 4) : chacun cherche ce qu'il aime, ce qu'il sait faire, ce dont le monde a besoin
-   → les élèves choisissent un projet et leurs coéquipiers.
-3. **Projet** (séances 5 à 14) : chaque groupe a un objectif, une feuille de route, et apprend
-   **tout ce qui lui manque en le demandant à des IA**.
-4. **Rituel à chaque séance** : on note ce qu'on a appris, on le dit à l'oral, on se fixe le prochain objectif.
+## Une séance = toujours les mêmes 3 temps
 
-Pourquoi ce format : en 2026, les meilleurs ingénieurs ne tapent presque plus de code eux-mêmes — ils
-décrivent ce qu'ils veulent, pilotent des agents, et **vérifient**. Le savoir-faire qui compte devient :
-savoir définir un objectif, savoir apprendre vite avec une IA, savoir juger si l'IA a raison, savoir
-travailler en équipe et expliquer ce qu'on a fait.
-
-## Contenu du dossier
-
-| Dossier | Pour qui | Quoi |
+| | Durée | Quoi |
 |---|---|---|
-| [programme.md](programme.md) | Animateur | Progression des 14 séances, déroulé type d'une séance, rituels |
-| [Semestre1/](Semestre1/) · [Semestre2/](Semestre2/) | Animateur | Une fiche minutée par séance (S01 → S07, S08 → S14) |
-| [slides/](ressources/slides/) | Projeté | Slides des séances 1-2 (modèle, harness) — ouvrir le `.html` dans un navigateur |
-| [eleves/](ressources/eleves/) | Élèves (à imprimer) | Carnet de bord, Ikigai, feuille de route, cartes-questions, charte, fiche safari |
-| [coach/](ressources/coach/) | IA | Le prompt « Coach de projet » à donner à l'IA des élèves |
-| [demo/](ressources/demo/) | Animateur | `harness_refuge.py` : même modèle, 3 harness, 3 résultats |
-| [outils/](ressources/outils/) | Élèves | `chat_du_club.py` : le chatbot du club (Streamlit + clé API de l'animateur) |
-| [notebooks/](ressources/notebooks/) | Élèves (S08) | Construire son propre mini-harness, pas à pas |
-| [animateur/](ressources/animateur/) | Animateur | Badges, grille d'observation, constitution des groupes, mot aux parents |
+| 🎯 **Le cap** | 10 min | Chaque équipe lit son objectif du jour. |
+| 🛠️ **On travaille** | 1 h 20 | 15 min de notion (voir le semestre), puis le projet avec l'IA. |
+| 🗣️ **On raconte** | 30 min | Chacun remplit son carnet (10 min), puis chaque équipe parle 2 min. |
 
-## Matériel
+À l'oral, le **porte-parole** (une personne différente à chaque séance) répond à 3 questions :
+**Qu'avez-vous appris ? L'IA s'est-elle trompée ? Quel est votre prochain objectif ?**
 
-- PC du réseau de l'association avec **Anaconda** (Python, Jupyter, `requests` déjà inclus).
-- Clés API Mistral créées par l'animateur pour la durée des séances (les révoquer après).
-- Streamlit pour le chat du club : `pip install streamlit` si absent d'Anaconda.
-- Optionnel : Ollama sur le PC de l'animateur pour montrer une IA locale (sans internet).
+## Les séances
 
-## ⚠️ Comptes et âge
+- [Semestre 1](Semestre1/README.md) : comprendre l'IA, choisir son projet, démarrer.
+- [Semestre 2](Semestre2/README.md) : construire, tester, présenter.
 
-La plupart des chatbots grand public exigent **13 ans minimum** (avec accord parental) dans leurs
-conditions d'utilisation. Pour des 10-12 ans, la voie propre est :
+## À imprimer
 
-- l'IA principale des élèves = **le chat du club** (`ressources/outils/chat_du_club.py`), qui passe par les clés API
-  de l'animateur — c'est lui le titulaire du compte, et c'est un harness qu'il contrôle (consignes adaptées
-  aux enfants, choix du modèle) ;
-- les chatbots publics (Le Chat, ChatGPT, Gemini…) **en démonstration projetée** ou avec le compte de
-  l'animateur lors du « safari des IA » (S03) ;
-- un mot aux parents en début d'année : [animateur/mot_aux_parents.md](ressources/animateur/mot_aux_parents.md).
+| Fiche | Pour qui | Quand |
+|---|---|---|
+| [Carnet](ressources/a_imprimer/carnet.md) | Chaque élève | Une demi-page par séance |
+| [Notre projet](ressources/a_imprimer/projet.md) | Chaque équipe | À partir de S04, reste au club |
+| [Mémo IA](ressources/a_imprimer/memo_ia.md) | Affiché sur chaque table | Toute l'année |
+| [Mot aux parents](ressources/a_imprimer/mot_aux_parents.md) | Les parents | S01 |
 
-## Édition précédente
+## Les outils de l'animateur
 
-L'édition 2025-2026 (« Cours Chatbot » : Python → LangChain → Streamlit) est dans
-[../2025-2026/Semestre2/](../2025-2026/Semestre2/).
+- **Le chat du club** ([chat_du_club/](ressources/chat_du_club/)) : l'IA des élèves. Elle passe par ta clé API et suit les consignes de `coach.txt`.
+  ```
+  set MISTRAL_API_KEY=ta_cle
+  streamlit run chat_du_club.py
+  ```
+- **La démo du refuge** ([demo/](ressources/demo/)), pour S02 : le même modèle avec 3 harness différents → `python harness_refuge.py`.
+- **Les slides** de S01-S02 ([slides/](ressources/slides/modele_et_harness.html)) : ouvrir dans un navigateur, puis flèches ← →.
+- **Le notebook** de S08 ([notebook/](ressources/notebook/)) : les élèves construisent leur propre harness.
+
+## Les 3 seules règles à retenir (pour les élèves)
+
+1. **L'IA m'explique, elle ne fait pas à ma place.**
+2. **Je vérifie ce qu'elle dit.**
+3. **Je ne donne jamais mes infos perso** (ni nom de famille, ni adresse, ni clé API).
+
+## ⚠️ Âge et comptes
+
+Les chatbots grand public demandent 13 ans minimum. Les élèves utilisent donc **le chat du club**,
+et l'animateur montre les autres IA en démonstration. Révoquer les clés API en fin d'année.
